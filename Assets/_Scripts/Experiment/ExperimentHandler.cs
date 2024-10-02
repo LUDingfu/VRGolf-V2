@@ -30,6 +30,8 @@ public class ExperimentHandler : SingletonMonoBehavior<ExperimentHandler>
     private bool isBlockActive;
     private bool isTrialActive;
     private bool isBallMoving;
+    private bool isPracticeActive;
+    private bool isPracticeTrialActive;
     private string startTime;
     private string endTime;
     private string ballFireTime;
@@ -111,6 +113,9 @@ public class ExperimentHandler : SingletonMonoBehavior<ExperimentHandler>
                         : $"{welcomeMessage}!";
                     string validationText = $"\nPlease read this code:\n{pid}-{conditionCode}-{session}";
                     tv.text = introText + validationText;
+                    isPracticeActive = true;
+                    block = 0;
+                    trial = 0;
                     break;
                 }
                 case > 1 when session <= maximumSessionCount:
@@ -167,6 +172,11 @@ public class ExperimentHandler : SingletonMonoBehavior<ExperimentHandler>
 
     private void HandleInput()
     {
+        if(isPracticeActive)
+        {
+            if (isPracticeTrialActive) FireBall();
+            else StartTrial();
+        }
         if (!receivedAllBlocks) Debug.LogError("HOW DID WE GET HERE?");
         if (!isBlockActive) StartBlock();
         else if (isBlockActive && !isTrialActive) StartTrial();
@@ -179,6 +189,12 @@ public class ExperimentHandler : SingletonMonoBehavior<ExperimentHandler>
 
     private void HandleUndo()
     {
+        if(isPracticeActive)
+        {
+            trial = 1;
+            block = 1;
+            tv.text = "Practice Session Finished\nPress trigger to continue";
+        }
         if (!receivedAllBlocks) Debug.LogError("HOW DID WE GET HERE?");
         UndoTrial();
     }
@@ -199,6 +215,11 @@ public class ExperimentHandler : SingletonMonoBehavior<ExperimentHandler>
 
     private void StartTrial()
     {
+        if (isPracticeActive)
+        {
+            tv.text = motorImageryMessage;
+            return;
+        }
         if (!isBlockActive)
         {
             Debug.LogWarning("No active block. Start a block first.");
